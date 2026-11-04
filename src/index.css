@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --canvas: #F6F8FA;
+    --deep-blue: #001B3A;
+    --trade-blue: #0057AC;
+    --flow-green: #1DCA76;
+    --primary-text: #172B3A;
+    --secondary-text: #5F7180;
+    --muted-text: #8A9AA6;
+    --border: #DCE3E8;
+    --surface: #FFFFFF;
+  }
+
+  body {
+    background-color: var(--canvas);
+    color: var(--primary-text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+.font-inter {
+  font-family: 'Inter', sans-serif;
+}
+
+.font-montserrat {
+  font-family: 'Montserrat', sans-serif;
+}
+
+.font-poppins {
+  font-family: 'Poppins', sans-serif;
+}
+
+.font-hanken {
+  font-family: 'Hanken Grotesk', sans-serif;
+}
+
+/* Gradient text utility for Flow */
+.text-flow-gradient {
+  background: linear-gradient(90deg, #0055D9 0%, #005BD2 6.25%, #0061CC 12.5%, #0068C5 18.75%, #006EBF 25%, #0074B8 45.19%, #00A584 65.87%, #00AC7D 87.5%, #00B277 93.75%, #00B870 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Custom scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F1F4F7;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}

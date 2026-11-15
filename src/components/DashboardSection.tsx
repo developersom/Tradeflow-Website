@@ -25,8 +25,10 @@ import {
   LogOut,
   ExternalLink,
   CheckCircle2,
+  Settings,
 } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
+import { NewContractSection } from './NewContractSection';
 
 interface DashboardSectionProps {
   user: User | null;
@@ -66,30 +68,8 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
     .toUpperCase()
     .slice(0, 2) || 'SS';
 
-  // Navigation Items matching Screenshot
-  const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'contracts', label: 'Contracts', icon: FileText, count: 4 },
-    { id: 'parties', label: 'Parties', icon: Users, count: 7 },
-    { id: 'commodities', label: 'Commodities', icon: Package, count: 6 },
-    { id: 'unit-master', label: 'Unit Master', icon: Layers, count: 8 },
-    { id: 'invoices', label: 'Invoices', icon: Receipt, count: 4 },
-    { id: 'ledger', label: 'Ledger & Balances', icon: BookOpen },
-    { id: 'settlements', label: 'Settlements', icon: ArrowLeftRight },
-    { id: 'follow-ups', label: 'Follow-ups', icon: Clock, count: 1, alert: true },
-    { id: 'compliance', label: 'After-sales & Compliance', icon: ShieldCheck },
-  ];
-
-  // Donut Commodities Data
-  const commodities = [
-    { name: 'Wheat', pct: 35, value: '₹8,50,000', volume: '500 MT traded', color: '#0057AC' },
-    { name: 'Yellow Corn', pct: 25, value: '₹4,80,000', volume: '300 MT traded', color: '#F59E0B' },
-    { name: 'Basmati Rice', pct: 20, value: '₹5,60,000', volume: '200 MT traded', color: '#8B5CF6' },
-    { name: 'Soybean', pct: 20, value: '₹6,20,000', volume: '400 MT traded', color: '#1DCA76' },
-  ];
-
-  // Contracts Table Data
-  const recentContracts = [
+  // Contracts Table Initial Data
+  const initialContracts = [
     {
       id: '#C-001',
       date: '27 Oct 2026',
@@ -130,6 +110,29 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
       status: 'Active',
       statusColor: 'bg-[#E6F9F0] text-[#1DCA76] border-[#1DCA76]/30',
     },
+  ];
+
+  const [contractsList, setContractsList] = useState(initialContracts);
+
+  const navItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'contracts', label: 'Contracts', icon: FileText, count: contractsList.length },
+    { id: 'parties', label: 'Parties', icon: Users, count: 7 },
+    { id: 'commodities', label: 'Commodities', icon: Package, count: 6 },
+    { id: 'unit-master', label: 'Unit Master', icon: Layers, count: 8 },
+    { id: 'invoices', label: 'Invoices', icon: Receipt, count: 4 },
+    { id: 'ledger', label: 'Ledger & Balances', icon: BookOpen },
+    { id: 'settlements', label: 'Settlements', icon: ArrowLeftRight },
+    { id: 'follow-ups', label: 'Follow-ups', icon: Clock, count: 6, alert: true },
+    { id: 'compliance', label: 'After-sales & Compliance', icon: ShieldCheck },
+  ];
+
+  // Donut Commodities Data
+  const commodities = [
+    { name: 'Wheat', pct: 35, value: '₹8,50,000', volume: '500 MT traded', color: '#0057AC' },
+    { name: 'Yellow Corn', pct: 25, value: '₹4,80,000', volume: '300 MT traded', color: '#F59E0B' },
+    { name: 'Basmati Rice', pct: 20, value: '₹5,60,000', volume: '200 MT traded', color: '#8B5CF6' },
+    { name: 'Soybean', pct: 20, value: '₹6,20,000', volume: '400 MT traded', color: '#1DCA76' },
   ];
 
   // Priority Tasks Data
@@ -240,6 +243,27 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
             })}
           </nav>
 
+          {/* Settings button matching Figma screenshot */}
+          <div className="px-3 pb-2">
+            <button
+              onClick={() => {
+                setActiveNav('settings');
+                setMobileSidebarOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-[8px] text-[13.5px] font-medium transition-all group cursor-pointer ${
+                activeNav === 'settings'
+                  ? 'bg-[#0057AC] text-white shadow-sm font-semibold'
+                  : 'text-[#8A9AA6] hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <Settings
+                size={18}
+                className={activeNav === 'settings' ? 'text-white' : 'text-[#8A9AA6] group-hover:text-white'}
+              />
+              <span>Settings</span>
+            </button>
+          </div>
+
           {/* Bottom Sidebar Action: Return to Public Site */}
           <div className="p-4 border-t border-white/5 space-y-2">
             <button
@@ -266,8 +290,20 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
 
       {/* 2. MAIN CONTENT AREA */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
-        {/* TOP BAR */}
-        <header className="h-[76px] bg-white border-b border-[#DCE3E8] px-6 md:px-8 flex items-center justify-between shrink-0">
+        {activeNav === 'contracts' ? (
+          <div className="flex-1 overflow-y-auto">
+            <NewContractSection
+              onBackToDashboard={() => setActiveNav('dashboard')}
+              onContractSaved={(newContract) => {
+                setContractsList([newContract, ...contractsList]);
+                setActiveNav('dashboard');
+              }}
+            />
+          </div>
+        ) : (
+          <>
+            {/* TOP BAR */}
+            <header className="h-[76px] bg-white border-b border-[#DCE3E8] px-6 md:px-8 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-4">
             {/* Hamburger Button for Mobile */}
             <button
@@ -641,12 +677,12 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
                     <FileText size={18} />
                   </div>
                   <div>
-                    <div className="font-inter font-bold text-[20px] text-[#001B3A]">4</div>
+                    <div className="font-inter font-bold text-[20px] text-[#001B3A]">{contractsList.length}</div>
                     <div className="font-inter text-[12.5px] text-[#5F7180]">Total Contracts</div>
                   </div>
                 </div>
                 <button
-                  onClick={() => setActiveModal('create-contract')}
+                  onClick={() => setActiveNav('contracts')}
                   className="px-3.5 py-1.5 rounded-[8px] bg-[#0057AC] hover:bg-[#00478D] text-white text-[12.5px] font-semibold transition-colors flex items-center gap-1 cursor-pointer"
                 >
                   <Plus size={14} />
@@ -892,7 +928,7 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#DCE3E8]/60 text-[#172B3A]">
-                    {recentContracts.map((c) => (
+                    {contractsList.map((c) => (
                       <tr key={c.id} className="hover:bg-[#F6F8FA]/80 transition-colors group cursor-pointer">
                         <td className="py-3.5 pr-4 font-mono font-semibold text-[#0057AC]">
                           {c.id}
@@ -970,6 +1006,8 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
             </div>
           </div>
         </main>
+          </>
+        )}
       </div>
 
       {/* QUICK ACTION / POPUP FEEDBACK MODAL */}

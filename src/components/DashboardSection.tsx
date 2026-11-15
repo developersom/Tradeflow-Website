@@ -68,6 +68,23 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
     .toUpperCase()
     .slice(0, 2) || 'SS';
 
+  // Dynamic Greeting based on current local time
+  const currentHour = new Date().getHours();
+  const greeting =
+    currentHour < 12
+      ? 'Good morning'
+      : currentHour < 17
+      ? 'Good afternoon'
+      : 'Good evening';
+
+  // Dynamic Date string (e.g. "Sun, 15 Nov 2026")
+  const currentDateStr = new Date().toLocaleDateString('en-GB', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+
   // Contracts Table Initial Data
   const initialContracts = [
     {
@@ -316,7 +333,7 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
             {/* Greeting Header */}
             <div>
               <h1 className="font-inter font-bold text-[20px] md:text-[22px] leading-tight text-[#001B3A]">
-                Good morning, {userName}
+                {greeting}, {userName}
               </h1>
               <p className="font-inter text-[13px] text-[#5F7180]">
                 Here's what's happening with your trading business today.
@@ -329,7 +346,7 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
             {/* Date Badge Pill */}
             <div className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-[8px] border border-[#DCE3E8] bg-[#F6F8FA] text-[13px] text-[#5F7180] font-medium">
               <Calendar size={15} className="text-[#0057AC]" />
-              <span>Wed, 28 Oct 2026</span>
+              <span>{currentDateStr}</span>
             </div>
 
             {/* Notifications Button */}

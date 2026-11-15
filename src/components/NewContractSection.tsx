@@ -14,8 +14,19 @@ export const NewContractSection: React.FC<NewContractSectionProps> = ({
   onBackToDashboard,
   onContractSaved,
 }) => {
+  // Dynamic Initial Dates
+  const today = new Date();
+  const defaultContractDate = `${String(today.getDate()).padStart(2, '0')}/${String(
+    today.getMonth() + 1
+  ).padStart(2, '0')}/${today.getFullYear()}`;
+
+  const deliveryTarget = new Date(Date.now() + 10 * 24 * 60 * 60 * 1000);
+  const defaultDeliveryDate = `${String(deliveryTarget.getDate()).padStart(2, '0')}/${String(
+    deliveryTarget.getMonth() + 1
+  ).padStart(2, '0')}/${deliveryTarget.getFullYear()}`;
+
   // Form State
-  const [contractDate, setContractDate] = useState('28/10/2026');
+  const [contractDate, setContractDate] = useState(defaultContractDate);
   const [commodity, setCommodity] = useState('Wheat');
   const [variety, setVariety] = useState('Premium Lokwan');
   const [quantity, setQuantity] = useState('500');
@@ -33,7 +44,7 @@ export const NewContractSection: React.FC<NewContractSectionProps> = ({
   const [sellerBrokerageValue, setSellerBrokerageValue] = useState('5000');
 
   // Delivery & Additional Terms
-  const [deliveryDate, setDeliveryDate] = useState('08/11/2026');
+  const [deliveryDate, setDeliveryDate] = useState(defaultDeliveryDate);
   const [poNumber, setPoNumber] = useState('PO-GT-2026-884');
   const [deliveryInstructions, setDeliveryInstructions] = useState(
     'Delivery via covered trailers. Designated Mandi electronic weighment.'

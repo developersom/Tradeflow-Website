@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Navbar } from './components/Navbar';
+import { Navbar, type NavPage } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
 import { RecordsSection } from './components/RecordsSection';
 import { BuiltForRealTradeSection } from './components/BuiltForRealTradeSection';
@@ -13,15 +13,24 @@ import { PricingSection } from './components/PricingSection';
 import { BlogSection } from './components/BlogSection';
 import { BlogDetailSection } from './components/BlogDetailSection';
 import { ContactSection } from './components/ContactSection';
+import { AuthSection } from './components/AuthSection';
+import { DashboardSection } from './components/DashboardSection';
 import { Footer } from './components/Footer';
+import { supabase, isSupabaseConfigured } from './lib/supabase';
+import type { User } from '@supabase/supabase-js';
 
 export const App: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState<'home' | 'pricing' | 'blog' | 'blog-detail' | 'contact'>(() => {
+  const [user, setUser] = useState<User | null>(null);
+
+  const [currentPage, setCurrentPage] = useState<NavPage>(() => {
     const hash = window.location.hash;
     if (hash.startsWith('#blog/')) return 'blog-detail';
     if (hash === '#pricing') return 'pricing';
     if (hash === '#blog') return 'blog';
     if (hash === '#contact' || hash === '#book-demo') return 'contact';
+    if (hash === '#login') return 'login';
+    if (hash === '#register') return 'register';
+    if (hash === '#dashboard') return 'dashboard';
     return 'home';
   });
 
@@ -32,6 +41,27 @@ export const App: React.FC = () => {
     }
     return 'eliminate-transit-shortages-weighbridge-mismatches';
   });
+
+  // Listen to Supabase Auth State
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) return;
+
+    // Check active session on mount
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    // Listen for auth state changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -49,6 +79,15 @@ export const App: React.FC = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else if (hash === '#contact' || hash === '#book-demo') {
         setCurrentPage('contact');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (hash === '#login') {
+        setCurrentPage('login');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (hash === '#register') {
+        setCurrentPage('register');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (hash === '#dashboard') {
+        setCurrentPage('dashboard');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         setCurrentPage('home');
@@ -78,7 +117,7 @@ export const App: React.FC = () => {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  const handleNavigate = (page: 'home' | 'pricing' | 'blog' | 'blog-detail' | 'contact', targetId?: string) => {
+  const handleNavigate = (page: NavPage, targetId?: string) => {
     setCurrentPage(page);
     if (page === 'pricing') {
       window.location.hash = 'pricing';
@@ -89,6 +128,15 @@ export const App: React.FC = () => {
     } else if (page === 'contact') {
       window.location.hash = 'contact';
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (page === 'login') {
+      window.location.hash = 'login';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (page === 'register') {
+      window.location.hash = 'register';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (page === 'dashboard') {
+      window.location.hash = 'dashboard';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (page === 'blog-detail') {
       window.location.hash = `blog/${selectedBlogSlug}`;
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -98,7 +146,10 @@ export const App: React.FC = () => {
         window.location.hash === '#blog' ||
         window.location.hash.startsWith('#blog/') ||
         window.location.hash === '#contact' ||
-        window.location.hash === '#book-demo'
+        window.location.hash === '#book-demo' ||
+        window.location.hash === '#login' ||
+        window.location.hash === '#register' ||
+        window.location.hash === '#dashboard'
       ) {
         window.history.pushState(null, '', window.location.pathname);
       }
@@ -125,10 +176,23 @@ export const App: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleSignOut = async () => {
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
+    setUser(null);
+    handleNavigate('home');
+  };
+
   return (
     <div className="min-h-screen bg-[#F6F8FA] flex flex-col font-inter text-[#172B3A] selection:bg-[#1DCA76]/30 selection:text-[#001B3A]">
       {/* 1. Sticky Navigation */}
-      <Navbar currentPage={currentPage} onNavigate={handleNavigate} />
+      <Navbar
+        currentPage={currentPage}
+        user={user}
+        onNavigate={handleNavigate}
+        onSignOut={handleSignOut}
+      />
 
       {/* Main Page Flow */}
       <main className="flex-1">
@@ -147,6 +211,20 @@ export const App: React.FC = () => {
         ) : currentPage === 'contact' ? (
           /* Entire Contact Page Flow */
           <ContactSection />
+        ) : currentPage === 'login' || currentPage === 'register' ? (
+          /* Unified Authentication (Sign In & Register) */
+          <AuthSection
+            initialMode={currentPage}
+            onAuthSuccess={() => handleNavigate('dashboard')}
+            onNavigateHome={() => handleNavigate('home')}
+          />
+        ) : currentPage === 'dashboard' ? (
+          /* Insider Workspace / Dashboard Placeholder */
+          <DashboardSection
+            user={user}
+            onSignOut={handleSignOut}
+            onNavigateHome={() => handleNavigate('home')}
+          />
         ) : (
           /* Entire Home Page Flow */
           <>

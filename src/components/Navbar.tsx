@@ -1,15 +1,30 @@
 import React, { useState } from 'react';
 import { Logo } from './Logo';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, LogOut, LayoutDashboard } from 'lucide-react';
+import type { User } from '@supabase/supabase-js';
+
+export type NavPage =
+  | 'home'
+  | 'pricing'
+  | 'blog'
+  | 'blog-detail'
+  | 'contact'
+  | 'login'
+  | 'register'
+  | 'dashboard';
 
 interface NavbarProps {
-  currentPage?: 'home' | 'pricing' | 'blog' | 'blog-detail' | 'contact';
-  onNavigate?: (page: 'home' | 'pricing' | 'blog' | 'contact', targetId?: string) => void;
+  currentPage?: NavPage;
+  user?: User | null;
+  onNavigate?: (page: NavPage, targetId?: string) => void;
+  onSignOut?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   currentPage = 'home',
+  user = null,
   onNavigate,
+  onSignOut,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -21,7 +36,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     { label: 'FAQs', href: '#faqs', page: 'home' as const, id: 'faqs' },
   ];
 
-  const handleLinkClick = (e: React.MouseEvent, page: 'home' | 'pricing' | 'blog' | 'contact', targetId?: string) => {
+  const handleLinkClick = (e: React.MouseEvent, page: NavPage, targetId?: string) => {
     e.preventDefault();
     if (onNavigate) {
       onNavigate(page, targetId);
@@ -32,6 +47,12 @@ export const Navbar: React.FC<NavbarProps> = ({
         window.location.hash = 'blog';
       } else if (page === 'contact') {
         window.location.hash = 'contact';
+      } else if (page === 'login') {
+        window.location.hash = 'login';
+      } else if (page === 'register') {
+        window.location.hash = 'register';
+      } else if (page === 'dashboard') {
+        window.location.hash = 'dashboard';
       } else if (targetId) {
         const el = document.getElementById(targetId);
         if (el) {
@@ -44,6 +65,11 @@ export const Navbar: React.FC<NavbarProps> = ({
     }
     setMobileMenuOpen(false);
   };
+
+  const userDisplayName =
+    user?.user_metadata?.full_name ||
+    user?.email?.split('@')[0] ||
+    'Trader';
 
   return (
     <header className="sticky top-0 z-50 w-full h-[79px] bg-white/80 backdrop-blur-[25px] shadow-[0px_2px_4px_rgba(0,0,0,0.08)] border-b border-[#DCE3E8]/40">
@@ -80,20 +106,47 @@ export const Navbar: React.FC<NavbarProps> = ({
         </nav>
 
         {/* Right CTA / Auth */}
-        <div className="hidden md:flex items-center gap-8">
-          <a
-            href="#login"
-            className="font-inter text-[14px] leading-[21px] text-[#172B3A] hover:text-[#0057AC] transition-colors font-normal"
-          >
-            Login
-          </a>
-          <a
-            href="#book-demo"
-            onClick={(e) => handleLinkClick(e, 'contact')}
-            className="inline-flex items-center justify-center px-4 py-2.5 rounded-[8px] bg-[#001B3A] hover:bg-[#002752] text-white font-inter text-[14px] font-semibold leading-[21px] transition-all shadow-sm active:scale-[0.98] cursor-pointer"
-          >
-            Book a Demo
-          </a>
+        <div className="hidden md:flex items-center gap-6">
+          {user ? (
+            <div className="flex items-center gap-4">
+              <button
+                onClick={(e) => handleLinkClick(e, 'dashboard')}
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-[8px] bg-[#001B3A]/5 hover:bg-[#001B3A]/10 text-[#001B3A] font-inter text-[14px] font-semibold transition-colors cursor-pointer"
+              >
+                <LayoutDashboard size={16} className="text-[#0057AC]" />
+                <span>Workspace</span>
+              </button>
+
+              <button
+                onClick={() => onSignOut && onSignOut()}
+                title="Sign Out"
+                className="p-2 rounded-[8px] text-[#5F7180] hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+              >
+                <LogOut size={18} />
+              </button>
+            </div>
+          ) : (
+            <>
+              <a
+                href="#login"
+                onClick={(e) => handleLinkClick(e, 'login')}
+                className={`font-inter text-[14px] leading-[21px] transition-colors font-medium cursor-pointer ${
+                  currentPage === 'login' || currentPage === 'register'
+                    ? 'text-[#0057AC] font-semibold'
+                    : 'text-[#172B3A] hover:text-[#0057AC]'
+                }`}
+              >
+                Login
+              </a>
+              <a
+                href="#book-demo"
+                onClick={(e) => handleLinkClick(e, 'contact')}
+                className="inline-flex items-center justify-center px-4 py-2.5 rounded-[8px] bg-[#001B3A] hover:bg-[#002752] text-white font-inter text-[14px] font-semibold leading-[21px] transition-all shadow-sm active:scale-[0.98] cursor-pointer"
+              >
+                Book a Demo
+              </a>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu Toggle Button */}
@@ -127,20 +180,44 @@ export const Navbar: React.FC<NavbarProps> = ({
             );
           })}
           <div className="pt-4 border-t border-[#DCE3E8] flex flex-col gap-3">
-            <a
-              href="#login"
-              onClick={() => setMobileMenuOpen(false)}
-              className="font-inter text-[14px] text-[#172B3A] py-1 font-medium"
-            >
-              Login
-            </a>
-            <a
-              href="#book-demo"
-              onClick={(e) => handleLinkClick(e, 'contact')}
-              className="w-full text-center py-2.5 rounded-[8px] bg-[#001B3A] text-white font-inter text-[14px] font-semibold cursor-pointer"
-            >
-              Book a Demo
-            </a>
+            {user ? (
+              <>
+                <button
+                  onClick={(e) => handleLinkClick(e, 'dashboard')}
+                  className="w-full text-left py-2 px-3 rounded-[8px] bg-[#001B3A] text-white font-inter text-[14px] font-semibold flex items-center justify-between"
+                >
+                  <span>Go to Workspace ({userDisplayName})</span>
+                  <LayoutDashboard size={16} />
+                </button>
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    if (onSignOut) onSignOut();
+                  }}
+                  className="w-full text-left py-2 px-3 rounded-[8px] bg-red-50 text-red-700 font-inter text-[14px] font-semibold flex items-center justify-between"
+                >
+                  <span>Sign Out</span>
+                  <LogOut size={16} />
+                </button>
+              </>
+            ) : (
+              <>
+                <a
+                  href="#login"
+                  onClick={(e) => handleLinkClick(e, 'login')}
+                  className="font-inter text-[14px] text-[#172B3A] py-1 font-medium cursor-pointer"
+                >
+                  Login
+                </a>
+                <a
+                  href="#book-demo"
+                  onClick={(e) => handleLinkClick(e, 'contact')}
+                  className="w-full text-center py-2.5 rounded-[8px] bg-[#001B3A] text-white font-inter text-[14px] font-semibold cursor-pointer"
+                >
+                  Book a Demo
+                </a>
+              </>
+            )}
           </div>
         </div>
       )}

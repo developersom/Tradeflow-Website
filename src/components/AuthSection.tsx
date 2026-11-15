@@ -450,7 +450,7 @@ export const AuthSection: React.FC<AuthSectionProps> = ({
                 <p className="font-inter text-[14px] text-[#5F7180]">
                   {mode === 'login' ? (
                     <>
-                      Don’t have a TraderFlow360 account?{' '}
+                      Don’t have a TradeFlow360 account?{' '}
                       <button
                         type="button"
                         onClick={() => {

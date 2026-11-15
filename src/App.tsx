@@ -184,6 +184,16 @@ export const App: React.FC = () => {
     handleNavigate('home');
   };
 
+  if (currentPage === 'dashboard') {
+    return (
+      <DashboardSection
+        user={user}
+        onSignOut={handleSignOut}
+        onNavigateHome={() => handleNavigate('home')}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#F6F8FA] flex flex-col font-inter text-[#172B3A] selection:bg-[#1DCA76]/30 selection:text-[#001B3A]">
       {/* 1. Sticky Navigation */}
@@ -216,13 +226,6 @@ export const App: React.FC = () => {
           <AuthSection
             initialMode={currentPage}
             onAuthSuccess={() => handleNavigate('dashboard')}
-            onNavigateHome={() => handleNavigate('home')}
-          />
-        ) : currentPage === 'dashboard' ? (
-          /* Insider Workspace / Dashboard Placeholder */
-          <DashboardSection
-            user={user}
-            onSignOut={handleSignOut}
             onNavigateHome={() => handleNavigate('home')}
           />
         ) : (
